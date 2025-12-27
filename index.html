@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block head %}
+<title>Task Smash</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+{% endblock %}
+{% block body %}
+<div class="content">
+    <h1>To-Do-List</h1> 
+    {% if tasks | length < 1 %}
+        <h3>No tasks found</h3>
+    {% else %}
+        <table>
+            <tr>
+                <th>TASK</th>
+                <th>ADDED</th>
+                <th>ACTIONS</th>
+            </tr>
+            {% for task in tasks %}
+            <tr>
+                <td>{{ task.content }}</td>
+                <td>{{ task.created|local_time(local_tz) }}</td>
+                <td>
+                    <button class="delete-btn" data-id="{{ task.id }}">Delete</button>
+                    <a href="/update/{{ task.id }}" class="update-btn">Update</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+    <form action="/" method="POST">
+        <input type="text" name="content" id="content" placeholder="Enter a new task" required />
+        <input type="submit" value="Add Task" id="btn_add" />
+    </form>
+</div>
+<div id="popup-overlay" class="popup-overlay">
+    <div class="popup-box">
+        <h3>🗑️ Confirm Delete</h3>
+        <p>Are you sure to delete this task?</p>
+        <div class="popup-actions">
+            <button id="cancel-btn">Cancel</button>
+            <button id="confirm-delete-btn">Delete</button>
+        </div>
+    </div>
+</div>
+<script>
+    const popupOverlay = document.getElementById('popup-overlay');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+    let deleteTaskId = null;
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            deleteTaskId = this.getAttribute('data-id');
+            popupOverlay.style.display = 'flex';
+        });
+    });
+    cancelBtn.addEventListener('click', () => {
+        popupOverlay.style.display = 'none';
+        deleteTaskId = null;
+    });
+    confirmDeleteBtn.addEventListener('click', () => {
+        if (deleteTaskId) {
+            window.location.href = `/delete/${deleteTaskId}`;
+        }
+    });
+</script>
+{% endblock %}
